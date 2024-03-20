@@ -1,10 +1,19 @@
+import 'package:audioplayers/audioplayers.dart';
+import 'package:weather_app/utils/sound_manager.dart';
+
 String getWeatherAnimation(String? condition, int sunrise, int sunset) {
+  final player = AudioPlayer();
+  final audioManager = AudioManager(player);
   var currentTime = DateTime.now();
   var sunriseTime = DateTime.fromMillisecondsSinceEpoch(sunrise * 1000);
-  //var sunsetTime = DateTime.fromMillisecondsSinceEpoch(sunset * 1000);
-  bool isDayTime = currentTime.isAfter(sunriseTime);
+  var sunsetTime = DateTime.fromMillisecondsSinceEpoch(sunset * 1000);
+  bool isDayTime =
+      currentTime.isAfter(sunriseTime) && currentTime.isBefore(sunsetTime);
   if (condition == null) {
     return isDayTime ? 'assets/sunny.json' : 'assets/night_clear.json';
+  }
+  if (condition.toLowerCase() == 'rain') {
+    audioManager.playSound();
   }
   switch (condition.toLowerCase()) {
     case 'clouds':

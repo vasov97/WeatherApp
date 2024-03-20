@@ -8,33 +8,32 @@ part of 'forecast_response.dart';
 
 ForecastResponse _$ForecastResponseFromJson(Map<String, dynamic> json) =>
     ForecastResponse(
-      list: (json['list'] as List<dynamic>)
-          .map((e) => ForecastItem.fromJson(e as Map<String, dynamic>))
-          .toList(),
+      latitude: (json['latitude'] as num).toDouble(),
+      longitude: (json['longitude'] as num).toDouble(),
+      daily: Daily.fromJson(json['daily'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$ForecastResponseToJson(ForecastResponse instance) =>
     <String, dynamic>{
-      'list': instance.list,
+      'latitude': instance.latitude,
+      'longitude': instance.longitude,
+      'daily': instance.daily,
     };
 
-ForecastItem _$ForecastItemFromJson(Map<String, dynamic> json) => ForecastItem(
-      temp: Temp.fromJson(json['temp'] as Map<String, dynamic>),
-      dt: json['dt'] as int,
+Daily _$DailyFromJson(Map<String, dynamic> json) => Daily(
+      time: (json['time'] as List<dynamic>).map((e) => e as String).toList(),
+      apparentTemperatureMin:
+          (json['apparent_temperature_min'] as List<dynamic>?)
+              ?.map((e) => (e as num).toDouble())
+              .toList(),
+      apparentTemperatureMax:
+          (json['apparent_temperature_max'] as List<dynamic>?)
+              ?.map((e) => (e as num).toDouble())
+              .toList(),
     );
 
-Map<String, dynamic> _$ForecastItemToJson(ForecastItem instance) =>
-    <String, dynamic>{
-      'temp': instance.temp,
-      'dt': instance.dt,
-    };
-
-Temp _$TempFromJson(Map<String, dynamic> json) => Temp(
-      min: (json['min'] as num).toDouble(),
-      max: (json['max'] as num).toDouble(),
-    );
-
-Map<String, dynamic> _$TempToJson(Temp instance) => <String, dynamic>{
-      'max': instance.max,
-      'min': instance.min,
+Map<String, dynamic> _$DailyToJson(Daily instance) => <String, dynamic>{
+      'time': instance.time,
+      'apparent_temperature_min': instance.apparentTemperatureMin,
+      'apparent_temperature_max': instance.apparentTemperatureMax,
     };

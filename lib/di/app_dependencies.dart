@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
+import 'package:weather_app/api/open_meteo_api.dart';
 import 'package:weather_app/api/weather_api.dart';
 import 'package:weather_app/cubit/forecast_cubit.dart';
 import 'package:weather_app/cubit/weather_cubit.dart';
@@ -33,11 +34,19 @@ class AppDependencies {
             context.read(),
           ),
         ),
+        Provider<OpenMeteoApi>(
+          create: (context) => OpenMeteoApi(
+            context.read(),
+          ),
+        ),
       ];
 
   List<SingleChildWidget> get _repositories => [
         Provider<WeatherRepository>(
-          create: (context) => WeatherRepository(context.read()),
+          create: (context) => WeatherRepository(
+            context.read(),
+            context.read(),
+          ),
         ),
       ];
 

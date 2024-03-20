@@ -1,13 +1,21 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:weather_app/models/weather_response.dart';
 
 part 'forecast_response.g.dart';
 
 @JsonSerializable()
 class ForecastResponse {
-  final List<ForecastItem> list;
+  @JsonKey(name: 'latitude')
+  final double latitude;
+  @JsonKey(name: 'longitude')
+  final double longitude;
+  @JsonKey(name: 'daily')
+  final Daily daily;
 
-  ForecastResponse({required this.list});
+  ForecastResponse({
+    required this.latitude,
+    required this.longitude,
+    required this.daily,
+  });
 
   factory ForecastResponse.fromJson(Map<String, dynamic> json) =>
       _$ForecastResponseFromJson(json);
@@ -16,38 +24,21 @@ class ForecastResponse {
 }
 
 @JsonSerializable()
-class ForecastItem {
-  @JsonKey(name: 'temp')
-  final Temp temp;
+class Daily {
+  @JsonKey(name: 'time')
+  final List<String> time;
+  @JsonKey(name: 'apparent_temperature_min')
+  final List<double>? apparentTemperatureMin;
+  @JsonKey(name: 'apparent_temperature_max')
+  final List<double>? apparentTemperatureMax;
 
-  @JsonKey(name: 'dt')
-  final int dt;
-
-  ForecastItem({
-    required this.temp,
-    required this.dt,
+  Daily({
+    required this.time,
+    required this.apparentTemperatureMin,
+    required this.apparentTemperatureMax,
   });
 
-  factory ForecastItem.fromJson(Map<String, dynamic> json) =>
-      _$ForecastItemFromJson(json);
+  factory Daily.fromJson(Map<String, dynamic> json) => _$DailyFromJson(json);
 
-  Map<String, dynamic> toJson() => _$ForecastItemToJson(this);
-}
-
-@JsonSerializable()
-class Temp {
-  @JsonKey(name: 'max')
-  final double max;
-
-  @JsonKey(name: 'min')
-  final double min;
-
-  Temp({
-    required this.min,
-    required this.max,
-  });
-
-  factory Temp.fromJson(Map<String, dynamic> json) => _$TempFromJson(json);
-
-  Map<String, dynamic> toJson() => _$TempToJson(this);
+  Map<String, dynamic> toJson() => _$DailyToJson(this);
 }

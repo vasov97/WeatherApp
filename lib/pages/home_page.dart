@@ -1,11 +1,12 @@
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
-import 'package:intl/intl.dart';
 import 'package:weather_app/cubit/forecast_cubit.dart';
 import 'package:weather_app/cubit/weather_cubit.dart';
+import 'package:weather_app/utils/string_utils.dart';
 import 'package:weather_app/utils/weather_animation.dart';
+import 'package:weather_app/widgets/max_temp_row.dart';
+import 'package:weather_app/widgets/min_temp_row.dart';
 
 import 'package:weather_app/widgets/weather_info_card.dart';
 
@@ -19,7 +20,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final controller = TextEditingController();
   String city = '';
-  final player = AudioPlayer();
+
   @override
   void dispose() {
     controller.dispose();
@@ -30,20 +31,13 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     BlocProvider.of<WeatherCubit>(context).fetchWeatherCurrentCity();
-    BlocProvider.of<ForecastCubit>(context).getForecast('Belgrade');
-  }
-
-  void playSound() async {
-    await player.play(AssetSource('night.mp3'));
-    loop();
-  }
-
-  void loop() {
-    player.setReleaseMode(ReleaseMode.loop);
+    BlocProvider.of<ForecastCubit>(context).getForecast();
   }
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
@@ -55,7 +49,7 @@ class _HomePageState extends State<HomePage> {
             return const Center(child: CircularProgressIndicator());
           } else if (state is WeatherSuccess) {
             final weather = state.weatherResponse;
-            // final forecast = state.forecastResponse;
+
             city = weather.cityName;
             return SingleChildScrollView(
               child: Column(
@@ -73,9 +67,11 @@ class _HomePageState extends State<HomePage> {
                       ),
                       ElevatedButton(
                         onPressed: () {
-                          BlocProvider.of<WeatherCubit>(context)
-                              .getWeatherByCity(controller.text);
                           city = controller.text;
+                          BlocProvider.of<WeatherCubit>(context)
+                              .getWeatherByCity(city);
+                          BlocProvider.of<ForecastCubit>(context)
+                              .getForecast(city: city);
                         },
                         child: const Text("Find city"),
                       ),
@@ -112,35 +108,61 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ],
                   ),
-                  BlocBuilder<ForecastCubit, ForecastState>(
-                    builder: (context, state) {
-                      if (state is ForecastSuccess) {
-                        return ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          shrinkWrap: true,
-                          itemCount: state.forecastResponse.length,
-                          itemBuilder: (context, index) {
-                            final forecastItem = state.forecastResponse[index];
-                            final date = DateTime.fromMillisecondsSinceEpoch(
-                                forecastItem.dt * 1000);
-                            return ListTile(
-                              title: Text(
-                                  'Date: ${DateFormat('yyyy-MM-dd').format(date)}'),
-                              subtitle: Text(
-                                  'Min Temp: ${forecastItem.temp.min}°C, Max Temp: ${forecastItem.temp.max}°C'),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: SizedBox(
+                      height: screenHeight * 0.2,
+                      child: BlocBuilder<ForecastCubit, ForecastState>(
+                        builder: (context, state) {
+                          if (state is ForecastSuccess) {
+                            final forecastMin = state.tempMin.daily;
+                            final forecastMax = state.tempMax.daily;
+                            final itemCount = state.tempMin.daily.time.length;
+                            return ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: itemCount,
+                              itemBuilder: (context, index) {
+                                final minTemp =
+                                    forecastMin.apparentTemperatureMin![index];
+                                final maxTemp =
+                                    forecastMax.apparentTemperatureMax![index];
+                                final date = forecastMin.time[index];
+                                String formattedDate = parseDate(date);
+                                return Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Container(
+                                    height: screenHeight * 0.01,
+                                    width: screenWidth * 0.3,
+                                    decoration: BoxDecoration(
+                                        color: const Color.fromARGB(
+                                            255, 88, 114, 159),
+                                        borderRadius:
+                                            BorderRadius.circular(20)),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        Text(
+                                          formattedDate,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 19,
+                                          ),
+                                        ),
+                                        MinTempRow(minTemp: minTemp),
+                                        MaxTempRow(maxTemp: maxTemp),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
                             );
-                          },
-                        );
-                      } else if (state is ForecastFailure) {
-                        return Center(
-                          child: Text('Failed forecast'),
-                        );
-                      } else {
-                        return Center(
-                          child: CircularProgressIndicator(),
-                        );
-                      }
-                    },
+                          } else {
+                            return const CircularProgressIndicator();
+                          }
+                        },
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -148,7 +170,6 @@ class _HomePageState extends State<HomePage> {
           } else if (state is WeatherFailure) {
             return Center(
               child: Column(
-                //mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const Text('Failed to find searched city'),

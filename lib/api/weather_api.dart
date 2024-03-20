@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:retrofit/retrofit.dart';
-import 'package:weather_app/models/forecast_response.dart';
 import 'package:weather_app/models/weather_response.dart';
 
 part 'weather_api.g.dart';
@@ -22,13 +21,5 @@ abstract class WeatherApi {
     @Query('lon') double longitude,
     @Query('appid') String apiKey,
     @Query('units') String units,
-  );
-
-  @GET("/forecast/daily")
-  Future<ForecastResponse> getForecastByCity(
-    @Query('q') String cityName,
-    @Query('appid') String apiKey,
-    @Query('units') String units,
-    @Query('cnt') int cnt,
   );
 }
