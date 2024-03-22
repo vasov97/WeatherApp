@@ -7,14 +7,13 @@ String getWeatherAnimation(String? condition, int sunrise, int sunset) {
   var currentTime = DateTime.now();
   var sunriseTime = DateTime.fromMillisecondsSinceEpoch(sunrise * 1000);
   var sunsetTime = DateTime.fromMillisecondsSinceEpoch(sunset * 1000);
-  bool isDayTime =
-      currentTime.isAfter(sunriseTime) && currentTime.isBefore(sunsetTime);
+  bool isDayTime = currentTime.isAfter(sunriseTime);
   if (condition == null) {
     return isDayTime ? 'assets/sunny.json' : 'assets/night_clear.json';
   }
-  if (condition.toLowerCase() == 'rain') {
-    audioManager.playSound();
-  }
+
+  audioManager.playSoundForWeather(condition, isDayTime);
+  print(condition);
   switch (condition.toLowerCase()) {
     case 'clouds':
     case 'mist':
